@@ -3,6 +3,9 @@
 """ 
 Interactive plot example by:
     https://stackoverflow.com/questions/4098131/how-to-update-a-plot-in-matplotlib
+
+Test figure closed by:
+    https://stackoverflow.com/questions/7557098/matplotlib-interactive-mode-determine-if-figure-window-is-still-displayed
 """
 
 import matplotlib.pyplot as plt
