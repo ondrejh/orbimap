@@ -4,6 +4,6 @@
 - [x] more axis
 - [x] connect gyro
 - [x] start / stop ploting
-- [ ] connect / disconnect port
+- [x] connect / disconnect port
 - [ ] save / load data
 - [ ] settings (port, range, ect.)
