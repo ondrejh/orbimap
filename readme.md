@@ -9,5 +9,6 @@
 - [x] window title, axes labels and so on
 - [x] settings (port, range, ect.)
 - [ ] save and restore settings
-- [ ] substract average acceleration
+- [x] substract average acceleration
 - [ ] file replay
+- [ ] calculate and display values: gravity (avg), rms, frequency

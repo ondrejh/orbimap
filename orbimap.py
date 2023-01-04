@@ -42,10 +42,13 @@ class myFig(object):
         self.z1 = [0] * self.dlen
         self.z2 = [0] * self.dlen
         self.z3 = [0] * self.dlen
+        self.ya1 = [0] * self.dlen
+        self.ya2 = [0] * self.dlen
+        self.ya3 = [0] * self.dlen
 
-        self.ln1, self.ln2, self.ln3, = self.ax.plot(self.x, self.y1, 'r-',
-                self.x, self.y2, 'g-',
-                self.x, self.y3, 'b-')
+        self.ln1, self.ln2, self.ln3, = self.ax.plot(self.x, self.ya1, 'r-',
+                self.x, self.ya2, 'g-',
+                self.x, self.ya3, 'b-')
         self.ax.set_ylim(self.ylim)
         self.ax.set_xlim([0, self.tmax])
         self.ax.set_ylabel('Accel [m/s^2]')
@@ -80,10 +83,13 @@ class myFig(object):
         self.z1 = [0] * self.dlen
         self.z2 = [0] * self.dlen
         self.z3 = [0] * self.dlen
+        self.ya1 = [0] * self.dlen
+        self.ya2 = [0] * self.dlen
+        self.ya3 = [0] * self.dlen
 
-        self.ln1, self.ln2, self.ln3, = self.ax.plot(self.x, self.y1, 'r-',
-                self.x, self.y2, 'g-',
-                self.x, self.y3, 'b-')
+        self.ln1, self.ln2, self.ln3, = self.ax.plot(self.x, self.ya1, 'r-',
+                self.x, self.ya2, 'g-',
+                self.x, self.ya3, 'b-')
         self.ax.set_ylim(self.ylim)
         self.ax.set_xlim([0, self.tmax])
         self.ax.set_ylabel('Accel [m/s^2]')
@@ -118,14 +124,28 @@ class myFig(object):
         self.z1[0] = data[3]
         self.z2[0] = data[4]
         self.z3[0] = data[5]
+        self.recalc()
         self.newdata = True
+
+    def recalc(self):
+        sy1 = sy2 = sy3 = 0
+        for i in range(self.dlen):
+            sy1 += self.y1[i]
+            sy2 += self.y2[i]
+            sy3 += self.y3[i]
+        sy1 /= self.dlen
+        sy2 /= self.dlen
+        sy3 /= self.dlen
+        self.ya1 = [(y - sy1) for y in self.y1]
+        self.ya2 = [(y - sy2) for y in self.y2]
+        self.ya3 = [(y - sy3) for y in self.y3]
 
     def update(self):
         if self.newdata:
             #print('update')
-            self.ln1.set_ydata(self.y1)
-            self.ln2.set_ydata(self.y2)
-            self.ln3.set_ydata(self.y3)
+            self.ln1.set_ydata(self.ya1)
+            self.ln2.set_ydata(self.ya2)
+            self.ln3.set_ydata(self.ya3)
             self.rln1.set_ydata(self.z1)
             self.rln2.set_ydata(self.z2)
             self.rln3.set_ydata(self.z3)
@@ -228,6 +248,7 @@ def load():
             Figma.z2[i] = float(sp[5])
             Figma.z3[i] = float(sp[6])
             i += 1
+    Figma.recalc()
     Figma.newdata = True
 
 def reset():
