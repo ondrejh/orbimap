@@ -7,7 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 import tkinter as tk
-from tkinter.ttk import Button, Frame
+from tkinter.ttk import Button, Frame, Entry
 
 import threading
 import serial
@@ -178,6 +178,42 @@ def connect():
         btnC['text'] = 'Connect'
         portEntry['state'] = 'normal'
 
+def save():
+    if not Figma.pause:
+        pause()
+    f = tk.filedialog.asksaveasfile(title="Select file to save plot", filetypes=(("csv files", "*.csv"), ("all files", "*.*")))
+    if f is None:
+        return
+    f.write('len;{}\n\n'.format(Figma.dlen))
+    for i in range(Figma.dlen):
+        f.write('{};{};{};{};{};{};{}\n'.format(Figma.x[i],
+            Figma.y1[i], Figma.y2[i], Figma.y3[i],
+            Figma.z1[i], Figma.z2[i], Figma.z3[i]))
+    f.close()
+
+
+def load():
+    if not Figma.pause:
+        pause()
+    f = tk.filedialog.askopenfile(title="Select file to load", filetypes=(("csv files", "*.csv"), ("all files", "*.*")))
+    if f is None:
+        return
+    i = 0
+    for line in f.readlines():
+        sp = line.strip().split(';')
+        if len(sp) > 1 and sp[0] == 'len':
+            dlen = int(sp[1])
+            Figma.reset(dlen=dlen)
+        elif len(sp) == 7:
+            Figma.x[i] = float(sp[0])
+            Figma.y1[i] = float(sp[1])
+            Figma.y2[i] = float(sp[2])
+            Figma.y3[i] = float(sp[3])
+            Figma.z1[i] = float(sp[4])
+            Figma.z2[i] = float(sp[5])
+            Figma.z3[i] = float(sp[6])
+            i += 1
+    Figma.newdata = True
 
 # frames
 root = tk.Tk()
@@ -193,16 +229,20 @@ cnv.get_tk_widget().pack(fill="both", expand=True)
 Figma = myFig(fg)
 
 # controls
-btnC = tk.Button(bot_frame, text='Connect', command=connect)
+btnC = Button(bot_frame, text='Connect', command=connect)
 btnC.pack(side='left')
 portVar = tk.StringVar()
 portVar.set(PORT)
-portEntry = tk.Entry(bot_frame, textvariable=portVar)
+portEntry = Entry(bot_frame, textvariable=portVar)
 portEntry.pack(side='left')
-btnP = tk.Button(bot_frame, text='Pause', command=pause)
+btnP = Button(bot_frame, text='Pause', command=pause)
 btnP.pack(side='left')
-btnR = tk.Button(bot_frame, text='Reset', command=Figma.reset)
+btnR = Button(bot_frame, text='Reset', command=Figma.reset)
 btnR.pack(side='left')
+btnS = Button(bot_frame, text='Save', command=save)
+btnS.pack(side='left')
+btnL = Button(bot_frame, text='Load', command=load)
+btnL.pack(side='left')
 
 gyroThr = GetGyro(PORT, Figma.insert)
 gyroThr.start()

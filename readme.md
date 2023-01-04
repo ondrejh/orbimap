@@ -5,5 +5,6 @@
 - [x] connect gyro
 - [x] start / stop ploting
 - [x] connect / disconnect port
-- [ ] save / load data
+- [x] save / load data
+- [ ] window title, axes labels and so on
 - [ ] settings (port, range, ect.)
