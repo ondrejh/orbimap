@@ -1,5 +1,9 @@
 - [x] interactive plot with matplotlib .. intplot.py
 - [x] run interactive plot until it's closed .. testPlotClosed.py
-- [ ] embed plot to tkinter
-- [ ] more axis
-- [ ] start / stop interactive plot in tkinter
+- [x] embed plot to tkinter
+- [x] more axis
+- [x] connect gyro
+- [x] start / stop ploting
+- [ ] connect / disconnect port
+- [ ] save / load data
+- [ ] settings (port, range, ect.)
