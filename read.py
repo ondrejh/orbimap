@@ -1,5 +1,6 @@
 import serial
 import click
+import datetime
 
 DEFAULT_PORT = 'COM9'
 
@@ -16,7 +17,7 @@ def read(port):
                 if b != ord('\n'):
                     buf += chr(b)
                 else:
-                    print(buf)
+                    print(datetime.datetime.now(), buf)
                     buf = ''
 
 if __name__ == '__main__':
