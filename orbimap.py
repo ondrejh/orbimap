@@ -126,31 +126,44 @@ class GetGyro(threading.Thread):
         self.portname = port
         self.updatefcn = update
         self.stop = False
+        self.connect = False
+        self.connected = False
     def run(self):
-        with serial.Serial(self.portname, timeout=0) as p:
-            buf = ""
-            while not self.stop:
-                cont = p.read()
-                for b in cont:
-                    if b != ord('\n'):
-                        buf += chr(b)
-                    else:
-                        splt = buf.split(' ')
-                        if len(splt) == 6:
-                            val = [float(s) for s in splt]
-                            #print(val)
-                            try:
-                            #if True:
-                                self.updatefcn(val)
-                            except:
-                                print('finito')
-                                self.stop = True
-                        buf = ""
+        while not self.stop:
+            if self.connect:
+                with serial.Serial(self.portname, timeout=0) as p:
+                    buf = ""
+                    self.connected = True
+                    while not self.stop or not self.connect:
+                        cont = p.read()
+                        for b in cont:
+                            if b != ord('\n'):
+                                buf += chr(b)
+                            else:
+                                splt = buf.split(' ')
+                                if len(splt) == 6:
+                                    val = [float(s) for s in splt]
+                                    #print(val)
+                                    try:
+                                    #if True:
+                                        self.updatefcn(val)
+                                    except:
+                                        print('finito')
+                                        self.stop = True
+                                buf = ""
+            else:
+                self.connected = False
+                while not self.connect and not self.stop:
+                    sleep(0.1)
 
 
 def pause():
     Figma.pause = not Figma.pause
     btnP['text'] = 'Run' if Figma.pause else 'Pause'
+
+def connect():
+    gyroThr.connect = not gyroThr.connect
+    btnC['text'] = 'Disconnect' if gyroThr.connect else 'Connect'
 
 
 # frames
@@ -167,6 +180,8 @@ cnv.get_tk_widget().pack(fill="both", expand=True)
 Figma = myFig(fg)
 
 # controls
+btnC = tk.Button(bot_frame, text='Connect', command=connect)
+btnC.pack(side='left')
 btnP = tk.Button(bot_frame, text='Pause', command=pause)
 btnP.pack(side='left')
 btnR = tk.Button(bot_frame, text='Reset', command=Figma.reset)
