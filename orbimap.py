@@ -7,7 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 import tkinter as tk
-from tkinter.ttk import Button, Frame, Entry
+from tkinter.ttk import Button, Frame, Entry, Label
 
 import threading
 import serial
@@ -22,18 +22,17 @@ PORT = '/dev/ttyACM0'
 
 class myFig(object):
 
-    def __init__(self, fig, tmax=TMAX, ylim=ALIM, zlim=RLIM, dlen=LEN):
+    def __init__(self, fig, tmax=TMAX, ylim=ALIM, zlim=RLIM, dlen=LEN, after=None):
         self.fig = fig
         self.ax = self.fig.add_subplot(211)
         self.bx = self.fig.add_subplot(212)
-
-        self.phase = 0
-        self.step = 0.1
+        self.after = after
 
         self.dlen = dlen
         self.tmax = tmax
         self.ylim = ylim
         self.zlim = zlim
+        self.grav = [0.0, 0.0, 0.0]
 
         self.x = np.linspace(0, self.tmax, self.dlen)
         self.y1 = [0] * self.dlen
@@ -139,6 +138,7 @@ class myFig(object):
         self.ya1 = [(y - sy1) for y in self.y1]
         self.ya2 = [(y - sy2) for y in self.y2]
         self.ya3 = [(y - sy3) for y in self.y3]
+        self.grav = [sy1, sy2, sy3]
 
     def update(self):
         if self.newdata:
@@ -152,6 +152,8 @@ class myFig(object):
             self.fig.canvas.draw()
             self.fig.canvas.flush_events()
             self.newdata = False
+        if self.after is not None:
+            self.after()
         root.after(20, self.update)
 
 
@@ -261,20 +263,29 @@ def reset():
 
     Figma.reset(dlen=dl, ylim=[-ar, ar], zlim=[-rr, rr], tmax=0.02*dl)
 
+def after():
+    #print('after')
+    labGxVal['text'] = '{:0.1f}'.format(Figma.grav[0])
+    labGyVal['text'] = '{:0.1f}'.format(Figma.grav[1])
+    labGzVal['text'] = '{:0.1f}'.format(Figma.grav[2])
 
 # frames
 root = tk.Tk()
 root.title("MPU6050 gyro logger v0.1")
-fg_frame = Frame(root)
-fg_frame.pack(fill="both", expand=True)
+fgsid_frame = Frame(root)
+fgsid_frame.pack(fill="both", expand=True)
+fg_frame = Frame(fgsid_frame)
+fg_frame.pack(side="left", fill="both", expand=True)
 bot_frame = Frame(root)
 bot_frame.pack(fill="x", expand=False)
+sid_frame = Frame(fgsid_frame)
+sid_frame.pack(side="left", fill="y", expand=False)
 
 # figure
 fg = Figure()
 cnv = FigureCanvasTkAgg(fg, fg_frame)
 cnv.get_tk_widget().pack(fill="both", expand=True)
-Figma = myFig(fg)
+Figma = myFig(fg, after=after)
 
 # controls
 btnC = Button(bot_frame, text='Connect', command=connect)
@@ -305,6 +316,19 @@ btnS = Button(bot_frame, text='Save', command=save)
 btnS.pack(side='left')
 btnL = Button(bot_frame, text='Load', command=load)
 btnL.pack(side='left')
+
+labGx = Label(sid_frame, text='Grav. X:')
+labGx.grid(row=0, column=0)
+labGy = Label(sid_frame, text='Grav. Y:')
+labGy.grid(row=1, column=0)
+labGz = Label(sid_frame, text='Grav. Z:')
+labGz.grid(row=2, column=0)
+labGxVal = Label(sid_frame, text='0.0', width=6, justify='center')
+labGxVal.grid(row=0, column=1)
+labGyVal = Label(sid_frame, text='0.0', width=6, justify='center')
+labGyVal.grid(row=1, column=1)
+labGzVal = Label(sid_frame, text='0.0', width=6, justify='center')
+labGzVal.grid(row=2, column=1)
 
 gyroThr = GetGyro(PORT, Figma.insert)
 gyroThr.start()
