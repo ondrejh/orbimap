@@ -18,7 +18,7 @@ TMAX = LEN * 0.02 #s
 ALIM = [-12, 12]
 RLIM = [-10, 10]
 
-PORT = 'COM9'
+PORT = '/dev/ttyACM0'
 
 class myFig(object):
 
@@ -134,7 +134,8 @@ class GetGyro(threading.Thread):
                 with serial.Serial(self.portname, timeout=0) as p:
                     buf = ""
                     self.connected = True
-                    while not self.stop or not self.connect:
+                    #print('connected')
+                    while self.connect and not self.stop:
                         cont = p.read()
                         for b in cont:
                             if b != ord('\n'):
@@ -151,10 +152,13 @@ class GetGyro(threading.Thread):
                                         print('finito')
                                         self.stop = True
                                 buf = ""
+                    #print('disconnecting')
             else:
+                #print('disconected')
                 self.connected = False
                 while not self.connect and not self.stop:
                     sleep(0.1)
+                #print('connecting')
 
 
 def pause():
