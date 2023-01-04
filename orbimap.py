@@ -54,9 +54,10 @@ class myFig(object):
         self.bx.grid()
 
         self.newdata = False
+        self.pause = False
 
     def reset(self, tmax=TMAX, ylim=ALIM, zlim=RLIM, dlen=LEN):
-        print('reset')
+        #print('reset')
         self.ax.clear()
 
         self.dlen = dlen
@@ -86,6 +87,8 @@ class myFig(object):
         self.fig.canvas.flush_events()
 
     def insert(self, data):
+        if self.pause:
+            return
         for i in range(self.dlen -1):
             n = self.dlen - 1 - i
             self.y1[n] = self.y1[n - 1]
@@ -137,11 +140,17 @@ class GetGyro(threading.Thread):
                             val = [float(s) for s in splt]
                             #print(val)
                             try:
+                            #if True:
                                 self.updatefcn(val)
                             except:
                                 print('finito')
                                 self.stop = True
                         buf = ""
+
+
+def pause():
+    Figma.pause = not Figma.pause
+    btnP['text'] = 'Run' if Figma.pause else 'Pause'
 
 
 # frames
@@ -158,8 +167,8 @@ cnv.get_tk_widget().pack(fill="both", expand=True)
 Figma = myFig(fg)
 
 # controls
-btnU = tk.Button(bot_frame, text='Update', command=Figma.update)
-btnU.pack(side='left')
+btnP = tk.Button(bot_frame, text='Pause', command=pause)
+btnP.pack(side='left')
 btnR = tk.Button(bot_frame, text='Reset', command=Figma.reset)
 btnR.pack(side='left')
 
