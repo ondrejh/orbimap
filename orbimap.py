@@ -51,6 +51,7 @@ class myFig(object):
         self.ax.set_ylim(self.ylim)
         self.ax.set_xlim([0, self.tmax])
         self.ax.set_ylabel('Accel [m/s^2]')
+        self.ax.legend(['Acc X', 'Acc Y', 'Acc Z'], loc='upper right')
         self.ax.grid()
 
         self.rln1, self.rln2, self.rln3, = self.bx.plot(self.x, self.z1, 'r-',
@@ -60,6 +61,7 @@ class myFig(object):
         self.bx.set_xlim([0, self.tmax])
         self.bx.set_ylabel('Rot [rad/s]')
         self.bx.set_xlabel('Time [s]')
+        self.bx.legend(['Rot X', 'Rot Y', 'Rot Z'], loc='upper right')
         self.bx.grid()
 
         self.newdata = False
@@ -92,6 +94,7 @@ class myFig(object):
         self.ax.set_ylim(self.ylim)
         self.ax.set_xlim([0, self.tmax])
         self.ax.set_ylabel('Accel [m/s^2]')
+        self.ax.legend(['Acc X', 'Acc Y', 'Acc Z'], loc='upper right')
         self.ax.grid()
 
         self.rln1, self.rln2, self.rln3, = self.bx.plot(self.x, self.z1, 'r-',
@@ -101,6 +104,7 @@ class myFig(object):
         self.bx.set_xlim([0, self.tmax])
         self.bx.set_ylabel('Rot [rad/s]')
         self.bx.set_xlabel('Time [s]')
+        self.bx.legend(['Rot X', 'Rot Y', 'Rot Z'], loc='upper right')
         self.bx.grid()
 
         self.fig.canvas.draw()
