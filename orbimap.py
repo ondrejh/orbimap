@@ -43,14 +43,21 @@ class myFig(object):
         self.z2 = [0] * self.dlen
         self.z3 = [0] * self.dlen
 
-        self.ln1, self.ln2, self.ln3, = self.ax.plot(self.x, self.y1, 'r-', self.x, self.y2, 'g-', self.x, self.y3, 'b-')
+        self.ln1, self.ln2, self.ln3, = self.ax.plot(self.x, self.y1, 'r-',
+                self.x, self.y2, 'g-',
+                self.x, self.y3, 'b-')
         self.ax.set_ylim(self.ylim)
         self.ax.set_xlim([0, self.tmax])
+        self.ax.set_ylabel('Accel [m/s^2]')
         self.ax.grid()
 
-        self.rln1, self.rln2, self.rln3, = self.bx.plot(self.x, self.z1, 'r-', self.x, self.z2, 'g-', self.x, self.z3, 'b-')
+        self.rln1, self.rln2, self.rln3, = self.bx.plot(self.x, self.z1, 'r-',
+                self.x, self.z2, 'g-',
+                self.x, self.z3, 'b-')
         self.bx.set_ylim(self.zlim)
         self.bx.set_xlim([0, self.tmax])
+        self.bx.set_ylabel('Rot [rad/s]')
+        self.bx.set_xlabel('Time [s]')
         self.bx.grid()
 
         self.newdata = False
@@ -74,14 +81,21 @@ class myFig(object):
         self.z2 = [0] * self.dlen
         self.z3 = [0] * self.dlen
 
-        self.ln1, self.ln2, self.ln3, = self.ax.plot(self.x, self.y1, 'r-', self.x, self.y2, 'g-', self.x, self.y3, 'b-')
+        self.ln1, self.ln2, self.ln3, = self.ax.plot(self.x, self.y1, 'r-',
+                self.x, self.y2, 'g-',
+                self.x, self.y3, 'b-')
         self.ax.set_ylim(self.ylim)
         self.ax.set_xlim([0, self.tmax])
+        self.ax.set_ylabel('Accel [m/s^2]')
         self.ax.grid()
 
-        self.rln1, self.rln2, self.rln3, = self.bx.plot(self.x, self.z1, 'r-', self.x, self.z2, 'g-', self.x, self.z3, 'b-')
+        self.rln1, self.rln2, self.rln3, = self.bx.plot(self.x, self.z1, 'r-',
+                self.x, self.z2, 'g-',
+                self.x, self.z3, 'b-')
         self.bx.set_ylim(self.zlim)
         self.bx.set_xlim([0, self.tmax])
+        self.bx.set_ylabel('Rot [rad/s]')
+        self.bx.set_xlabel('Time [s]')
         self.bx.grid()
 
         self.fig.canvas.draw()
@@ -203,7 +217,8 @@ def load():
         sp = line.strip().split(';')
         if len(sp) > 1 and sp[0] == 'len':
             dlen = int(sp[1])
-            Figma.reset(dlen=dlen)
+            if Figma.dlen != dlen:
+                Figma.reset(dlen=dlen)
         elif len(sp) == 7:
             Figma.x[i] = float(sp[0])
             Figma.y1[i] = float(sp[1])
@@ -215,8 +230,20 @@ def load():
             i += 1
     Figma.newdata = True
 
+def reset():
+    try:
+        ar = float(accRangVar.get())
+        rr = float(rolRangVar.get())
+        dl = int(dlenVar.get())
+    except TypeError:
+        return
+
+    Figma.reset(dlen=dl, ylim=[-ar, ar], zlim=[-rr, rr], tmax=0.02*dl)
+
+
 # frames
 root = tk.Tk()
+root.title("MPU6050 gyro logger v0.1")
 fg_frame = Frame(root)
 fg_frame.pack(fill="both", expand=True)
 bot_frame = Frame(root)
@@ -233,11 +260,25 @@ btnC = Button(bot_frame, text='Connect', command=connect)
 btnC.pack(side='left')
 portVar = tk.StringVar()
 portVar.set(PORT)
-portEntry = Entry(bot_frame, textvariable=portVar)
+portEntry = Entry(bot_frame, textvariable=portVar, width=15, justify='center')
 portEntry.pack(side='left')
 btnP = Button(bot_frame, text='Pause', command=pause)
 btnP.pack(side='left')
-btnR = Button(bot_frame, text='Reset', command=Figma.reset)
+
+accRangVar = tk.StringVar()
+accRangVar.set(ALIM[-1])
+accRangEntry = Entry(bot_frame, textvariable=accRangVar, width=6, justify='center')
+accRangEntry.pack(side='left')
+rolRangVar = tk.StringVar()
+rolRangVar.set(RLIM[-1])
+rolRangEntry = Entry(bot_frame, textvariable=rolRangVar, width=6, justify='center')
+rolRangEntry.pack(side='left')
+dlenVar = tk.StringVar()
+dlenVar.set(LEN)
+dlenEntry = Entry(bot_frame, textvariable=dlenVar, width=6, justify='center')
+dlenEntry.pack(side='left')
+
+btnR = Button(bot_frame, text='Reset', command=reset)
 btnR.pack(side='left')
 btnS = Button(bot_frame, text='Save', command=save)
 btnS.pack(side='left')

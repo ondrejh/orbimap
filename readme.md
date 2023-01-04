@@ -6,5 +6,8 @@
 - [x] start / stop ploting
 - [x] connect / disconnect port
 - [x] save / load data
-- [ ] window title, axes labels and so on
-- [ ] settings (port, range, ect.)
+- [x] window title, axes labels and so on
+- [x] settings (port, range, ect.)
+- [ ] save and restore settings
+- [ ] substract average acceleration
+- [ ] file replay
