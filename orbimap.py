@@ -59,6 +59,7 @@ class myFig(object):
     def reset(self, tmax=TMAX, ylim=ALIM, zlim=RLIM, dlen=LEN):
         #print('reset')
         self.ax.clear()
+        self.bx.clear()
 
         self.dlen = dlen
         self.tmax = tmax
@@ -166,8 +167,16 @@ def pause():
     btnP['text'] = 'Run' if Figma.pause else 'Pause'
 
 def connect():
+    gyroThr.portname = portVar.get()
     gyroThr.connect = not gyroThr.connect
-    btnC['text'] = 'Disconnect' if gyroThr.connect else 'Connect'
+    if gyroThr.connect:
+        btnC['text'] = 'Disconnect'
+        portEntry['state'] = 'disabled'
+        if Figma.pause:
+            pause()
+    else:
+        btnC['text'] = 'Connect'
+        portEntry['state'] = 'normal'
 
 
 # frames
@@ -175,7 +184,7 @@ root = tk.Tk()
 fg_frame = Frame(root)
 fg_frame.pack(fill="both", expand=True)
 bot_frame = Frame(root)
-bot_frame.pack(fill="x", expand=True)
+bot_frame.pack(fill="x", expand=False)
 
 # figure
 fg = Figure()
@@ -186,6 +195,10 @@ Figma = myFig(fg)
 # controls
 btnC = tk.Button(bot_frame, text='Connect', command=connect)
 btnC.pack(side='left')
+portVar = tk.StringVar()
+portVar.set(PORT)
+portEntry = tk.Entry(bot_frame, textvariable=portVar)
+portEntry.pack(side='left')
 btnP = tk.Button(bot_frame, text='Pause', command=pause)
 btnP.pack(side='left')
 btnR = tk.Button(bot_frame, text='Reset', command=Figma.reset)
