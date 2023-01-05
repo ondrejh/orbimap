@@ -12,6 +12,7 @@ from tkinter.ttk import Button, Frame, Entry, Label
 import threading
 import serial
 from time import sleep
+from math import sqrt
 
 LEN = 250
 TMAX = LEN * 0.02 #s
@@ -33,6 +34,7 @@ class myFig(object):
         self.ylim = ylim
         self.zlim = zlim
         self.grav = [0.0, 0.0, 0.0]
+        self.rms = [0.0, 0.0, 0.0]
 
         self.x = np.linspace(0, self.tmax, self.dlen)
         self.y1 = [0] * self.dlen
@@ -131,7 +133,7 @@ class myFig(object):
         self.newdata = True
 
     def recalc(self):
-        sy1 = sy2 = sy3 = 0
+        sy1 = sy2 = sy3 = 0.0
         for i in range(self.dlen):
             sy1 += self.y1[i]
             sy2 += self.y2[i]
@@ -143,6 +145,16 @@ class myFig(object):
         self.ya2 = [(y - sy2) for y in self.y2]
         self.ya3 = [(y - sy3) for y in self.y3]
         self.grav = [sy1, sy2, sy3]
+
+        ry1 = ry2 = ry3 = 0.0
+        for i in range(self.dlen):
+            ry1 += self.ya1[i] * self.ya1[i] 
+            ry2 += self.ya2[i] * self.ya2[i]
+            ry3 += self.ya3[i] * self.ya3[i]
+        ry1 = sqrt( ry1 / self.dlen )
+        ry2 = sqrt( ry2 / self.dlen )
+        ry3 = sqrt( ry3 / self.dlen )
+        self.rms = [ry1, ry2, ry3]
 
     def update(self):
         if self.newdata:
@@ -272,6 +284,9 @@ def after():
     labGxVal['text'] = '{:0.1f}'.format(Figma.grav[0])
     labGyVal['text'] = '{:0.1f}'.format(Figma.grav[1])
     labGzVal['text'] = '{:0.1f}'.format(Figma.grav[2])
+    labRxV['text'] = '{:0.1f}'.format(Figma.rms[0])
+    labRyV['text'] = '{:0.1f}'.format(Figma.rms[1])
+    labRzV['text'] = '{:0.1f}'.format(Figma.rms[2])
 
 # frames
 root = tk.Tk()
@@ -333,6 +348,18 @@ labGyVal = Label(sid_frame, text='0.0', width=6, justify='center')
 labGyVal.grid(row=1, column=1)
 labGzVal = Label(sid_frame, text='0.0', width=6, justify='center')
 labGzVal.grid(row=2, column=1)
+labRx = Label(sid_frame, text='Rms X:')
+labRx.grid(row=3, column=0)
+labRy = Label(sid_frame, text='Rms Y:')
+labRy.grid(row=4, column=0)
+labRz = Label(sid_frame, text='Rms Z:')
+labRz.grid(row=5, column=0)
+labRxV = Label(sid_frame, text='0.0', width=6, justify='center')
+labRxV.grid(row=3, column=1)
+labRyV = Label(sid_frame, text='0.0', width=6, justify='center')
+labRyV.grid(row=4, column=1)
+labRzV = Label(sid_frame, text='0.0', width=6, justify='center')
+labRzV.grid(row=5, column=1)
 
 gyroThr = GetGyro(PORT, Figma.insert)
 gyroThr.start()
