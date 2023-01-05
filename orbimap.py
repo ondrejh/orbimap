@@ -181,6 +181,7 @@ class GetGyro(threading.Thread):
         self.stop = False
         self.connect = False
         self.connected = False
+        self.replay = False
     def run(self):
         while not self.stop:
             if self.connect:
@@ -206,10 +207,16 @@ class GetGyro(threading.Thread):
                                         self.stop = True
                                 buf = ""
                     #print('disconnecting')
+            elif self.replay:
+                for i in range(Figma.dlen):
+                    val = [Figma.y1[-1], Figma.y2[-1], Figma.y3[-1], Figma.z1[-1], Figma.z2[-1], Figma.z3[-1]]
+                    self.updatefcn(val)
+                    sleep(0.02)
+                self.replay = False
             else:
                 #print('disconected')
                 self.connected = False
-                while not self.connect and not self.stop:
+                while not self.connect and not self.stop and not self.replay:
                     sleep(0.1)
                 #print('connecting')
 
@@ -224,11 +231,13 @@ def connect():
     if gyroThr.connect:
         btnC['text'] = 'Disconnect'
         portEntry['state'] = 'disabled'
+        btnP['state'] = 'disabled'
         if Figma.pause:
             pause()
     else:
         btnC['text'] = 'Connect'
         portEntry['state'] = 'normal'
+        btnP['state'] = 'normal'
 
 def save():
     if not Figma.pause:
@@ -268,6 +277,12 @@ def load():
             i += 1
     Figma.recalc()
     Figma.newdata = True
+
+def replay():
+    if not gyroThr.connect and not gyroThr.connected:
+        if Figma.pause:
+            pause()
+        gyroThr.replay = True
 
 def reset():
     try:
@@ -335,6 +350,8 @@ btnS = Button(bot_frame, text='Save', command=save)
 btnS.pack(side='left')
 btnL = Button(bot_frame, text='Load', command=load)
 btnL.pack(side='left')
+btnRp = Button(bot_frame, text='Replay', command=replay)
+btnRp.pack(side='left')
 
 labGx = Label(sid_frame, text='Grav. X:')
 labGx.grid(row=0, column=0)
