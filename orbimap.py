@@ -334,13 +334,13 @@ def connect():
     if gyroThr.connect:
         btnC['text'] = 'Disconnect'
         portEntry['state'] = 'disabled'
-        btnP['state'] = 'disabled'
+        btnRp['state'] = 'disabled'
         if Figma.pause:
             pause()
     else:
         btnC['text'] = 'Connect'
         portEntry['state'] = 'normal'
-        btnP['state'] = 'normal'
+        btnRp['state'] = 'normal'
 
 def save():
     if not Figma.pause:

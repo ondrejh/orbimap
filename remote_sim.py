@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 import socket
 from time import sleep
 
@@ -45,9 +47,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 print(msg)
                 msg += '\n'
                 conn.sendall(msg.encode('ascii'))
-                ptr += 1
-                if ptr >= len(data):
-                    ptr = 0
+                ptr -= 1
+                if ptr < 0:
+                    ptr = len(data) - 1
                 sleep(0.02)
         except ConnectionAbortedError:
             print('Connection closed by client')
