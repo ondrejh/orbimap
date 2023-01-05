@@ -33,7 +33,7 @@ Save and load data to and from file.
 - [x] settings (port, range, ect.)
 - [ ] save and restore settings
 - [x] substract average acceleration
-- [ ] file replay
+- [x] file replay
 - [ ] calculate and display values: gravity (avg), rms, frequency
 
 ... and many others
