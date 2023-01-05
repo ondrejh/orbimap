@@ -13,6 +13,7 @@ import threading
 import serial
 from time import sleep
 from math import sqrt
+import socket
 
 from pynput.keyboard import Key, Controller
 keyboard = Controller()
@@ -267,28 +268,48 @@ class GetGyro(threading.Thread):
     def run(self):
         while not self.stop:
             if self.connect:
-                with serial.Serial(self.portname, timeout=0) as p:
-                    buf = ""
-                    self.connected = True
-                    #print('connected')
+                if len(self.portname.split(':')) == 2:
+                    host, port = self.portname.split(':')
+                    client = socket.socket()
+                    port = int(port)
+                    client.connect((host, port))
                     while self.connect and not self.stop:
-                        cont = p.read()
-                        for b in cont:
-                            if b != ord('\n'):
-                                buf += chr(b)
-                            else:
-                                splt = buf.split(' ')
-                                if len(splt) == 6:
-                                    val = [float(s) for s in splt]
-                                    #print(val)
-                                    try:
-                                    #if True:
-                                        self.updatefcn(val)
-                                    except:
-                                        print('finito')
-                                        self.stop = True
-                                buf = ""
-                    #print('disconnecting')
+                        try:
+                            msg = client.recv(1024).decode('ascii').strip()
+                            splt = msg.split(' ')
+                            if len(splt) == 6:
+                                val = [float(s) for s in splt]
+                                try:
+                                    self.updatefcn(val)
+                                except:
+                                    print('TCP finito')
+                                    self.stop = True
+                        except socket.error:
+                            break
+                    client.close()
+                else:
+                    with serial.Serial(self.portname, timeout=0) as p:
+                        buf = ""
+                        self.connected = True
+                        #print('connected')
+                        while self.connect and not self.stop:
+                            cont = p.read()
+                            for b in cont:
+                                if b != ord('\n'):
+                                    buf += chr(b)
+                                else:
+                                    splt = buf.split(' ')
+                                    if len(splt) == 6:
+                                        val = [float(s) for s in splt]
+                                        #print(val)
+                                        try:
+                                        #if True:
+                                            self.updatefcn(val)
+                                        except:
+                                            print('finito')
+                                            self.stop = True
+                                    buf = ""
+                        #print('disconnecting')
             elif self.replay:
                 for i in range(Figma.dlen):
                     val = [Figma.y1[-1], Figma.y2[-1], Figma.y3[-1], Figma.z1[-1], Figma.z2[-1], Figma.z3[-1]]
