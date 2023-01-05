@@ -34,7 +34,10 @@ Save and load data to and from file.
 - [ ] save and restore settings
 - [x] substract average acceleration
 - [x] file replay
-- [ ] calculate and display values: gravity (avg), rms, frequency
+- [x] calculate and display values: gravity (avg), rms, ~~frequency~~
+- [x] detect steps forward / backward
+- [ ] emulate key press
+- [ ] arrow icons
 
 ... and many others
 

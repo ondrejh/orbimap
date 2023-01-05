@@ -21,6 +21,8 @@ RLIM = [-10, 10]
 
 PORT = '/dev/ttyACM0'
 
+PRESS = 120
+
 class myFig(object):
 
     def __init__(self, fig, tmax=TMAX, ylim=ALIM, zlim=RLIM, dlen=LEN, after=None):
@@ -46,6 +48,12 @@ class myFig(object):
         self.ycznt = 0
         self.zczn = False
         self.zcznt = 0
+
+        # step flag
+        self.stepForw = False
+        self.stepBack = False
+        self.stepsForw = 0
+        self.stepsBack = 0
 
         self.x = np.linspace(0, self.tmax, self.dlen)
         self.y1 = [0] * self.dlen
@@ -81,6 +89,9 @@ class myFig(object):
         self.pause = False
 
     def reset(self, tmax=TMAX, ylim=ALIM, zlim=RLIM, dlen=LEN):
+        self.stepsForw = 0
+        self.stepsBack = 0
+
         self.ax.clear()
         self.bx.clear()
 
@@ -177,18 +188,24 @@ class myFig(object):
                 dt = self.yczt - self.zczt
                 dtt = self.yczt / 3
                 if dt < dtt:
-                    print('Backward')
+                    self.stepBack = True
+                    self.stepsBack += 1
+                    #print('Backward')
                 elif dt > 2 * dtt:
-                    print('Forward')
+                    self.stepForw = True
+                    self.stepsForw += 1
+                    #print('Forward')
             self.ycz = False
             self.yczt = 0
-            print('Y zero crossing')
+            #print('Y zero crossing')
         if self.ya3[0] > self.th:
             self.zcz = True
         elif self.zcz and (self.ya3[0] < -self.th):
             self.zcz = False
             self.zczt = 0
-            print('Z zero crossing')
+            #self.stepBack = False
+            #self.stepForw = False
+            #print('Z zero crossing')
         if self.ya2[0] < -self.th:
             self.yczn = True
         elif self.yczn and (self.ya2[0] > self.th):
@@ -196,18 +213,24 @@ class myFig(object):
                 dt = self.ycznt - self.zcznt
                 dtt = self.ycznt / 3
                 if dt < dtt:
-                    print('Backward')
+                    self.stepBack = True
+                    self.stepsBack += 1
+                    #print('Backward')
                 elif dt > 2 * dtt:
-                    print('Forward')
+                    self.stepForw = True
+                    self.stepsForw += 1
+                    #print('Forward')
             self.yczn = False
             self.ycznt = 0
-            print('Y zero crossing negative')
+            #print('Y zero crossing negative')
         if self.ya3[0] < -self.th:
             self.zczn = True
         elif self.zczn and (self.ya3[0] > self.th):
             self.zczn = False
             self.zcznt = 0
-            print('Z zero crossing negative')
+            #self.stepBack = False
+            #self.stepForw = False
+            #print('Z zero crossing negative')
         self.yczt += 1
         self.zczt += 1
         self.ycznt += 1
@@ -349,17 +372,6 @@ def reset():
 
     Figma.reset(dlen=dl, ylim=[-ar, ar], zlim=[-rr, rr], tmax=0.02*dl)
 
-def after():
-    labGxVal['text'] = '{:0.1f}'.format(Figma.grav[0])
-    labGyVal['text'] = '{:0.1f}'.format(Figma.grav[1])
-    labGzVal['text'] = '{:0.1f}'.format(Figma.grav[2])
-    labRxV['text'] = '{:0.1f}'.format(Figma.rms[0])
-    labRyV['text'] = '{:0.1f}'.format(Figma.rms[1])
-    labRzV['text'] = '{:0.1f}'.format(Figma.rms[2])
-    labThV['text'] = '{:0.1f}'.format(Figma.th)
-    labZcyV['text'] = str(Figma.yczt)
-    labZczV['text'] = str(Figma.zczt)
-
 # frames
 root = tk.Tk()
 root.title("MPU6050 gyro logger v0.1")
@@ -371,6 +383,53 @@ bot_frame = Frame(root)
 bot_frame.pack(fill="x", expand=False)
 sid_frame = Frame(fgsid_frame)
 sid_frame.pack(side="left", fill="y", expand=False)
+
+# step labels
+labBackB = False
+labForwB = False
+labForw = Label(sid_frame, text='FORWARD')
+def forwShow():
+    global labForwB
+    if not labForwB:
+        labForw.grid(row=20, column=0, columnspan=2)
+        labForwB = True
+def forwHide():
+    global labForwB
+    if labForwB:
+        labForw.grid_forget()
+        labForwB = False
+labBack = Label(sid_frame, text='BACKWARD')
+def backShow():
+    global labBackB
+    if not labBackB:
+        labBack.grid(row=20, column=0, columnspan=2)
+        labBackB = True
+def backHide():
+    global labBackB
+    if labBackB:
+        labBack.grid_forget()
+        labBackB = False
+
+def after():
+    labGxVal['text'] = '{:0.1f}'.format(Figma.grav[0])
+    labGyVal['text'] = '{:0.1f}'.format(Figma.grav[1])
+    labGzVal['text'] = '{:0.1f}'.format(Figma.grav[2])
+    labRxV['text'] = '{:0.1f}'.format(Figma.rms[0])
+    labRyV['text'] = '{:0.1f}'.format(Figma.rms[1])
+    labRzV['text'] = '{:0.1f}'.format(Figma.rms[2])
+    labThV['text'] = '{:0.1f}'.format(Figma.th)
+    labZcyV['text'] = str(Figma.yczt)
+    labZczV['text'] = str(Figma.zczt)
+    labZcnyV['text'] = str(Figma.ycznt)
+    labZcnzV['text'] = str(Figma.zcznt)
+    if Figma.stepForw:
+        forwShow()
+        Figma.stepForw = False
+        root.after(PRESS, forwHide)
+    if Figma.stepBack:
+        backShow()
+        Figma.stepBack = False
+        root.after(PRESS, backHide)
 
 # figure
 fg = Figure()
@@ -436,19 +495,28 @@ labRyV = Label(sid_frame, text='0.0', width=6, justify='center')
 labRyV.grid(row=4, column=1)
 labRzV = Label(sid_frame, text='0.0', width=6, justify='center')
 labRzV.grid(row=5, column=1)
-# treshold
+# treshold and step detection
 labTh = Label(sid_frame, text='Th:')
 labTh.grid(row=6, column=0)
 labThV = Label(sid_frame, text='1.0', width=6, justify='center')
 labThV.grid(row=6, column=1)
-labZcy = Label(sid_frame, text='Y tim:')
+labZcy = Label(sid_frame, text='Y zc:')
 labZcy.grid(row=7, column=0)
 labZcyV = Label(sid_frame, text='0', width=6, justify='center')
 labZcyV.grid(row=7, column=1)
-labZcz = Label(sid_frame, text='Z tim:')
+labZcz = Label(sid_frame, text='Z zc:')
 labZcz.grid(row=8, column=0)
 labZczV = Label(sid_frame, text='0', width=6, justify='center')
 labZczV.grid(row=8, column=1)
+labZcny = Label(sid_frame, text='Y zcn:')
+labZcny.grid(row=9, column=0)
+labZcnyV = Label(sid_frame, text='0', width=6, justify='center')
+labZcnyV.grid(row=9, column=1)
+labZcnz = Label(sid_frame, text='Z zcn:')
+labZcnz.grid(row=10, column=0)
+labZcnzV = Label(sid_frame, text='0', width=6, justify='center')
+labZcnzV.grid(row=10, column=1)
+
 
 gyroThr = GetGyro(PORT, Figma.insert)
 gyroThr.start()
