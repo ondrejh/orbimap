@@ -36,6 +36,17 @@ class myFig(object):
         self.grav = [0.0, 0.0, 0.0]
         self.rms = [0.0, 0.0, 0.0]
 
+        # zero crossing
+        self.th = 1.0
+        self.ycz = False
+        self.yczt = 0
+        self.zcz = False
+        self.zczt = 0
+        self.yczn = False
+        self.ycznt = 0
+        self.zczn = False
+        self.zcznt = 0
+
         self.x = np.linspace(0, self.tmax, self.dlen)
         self.y1 = [0] * self.dlen
         self.y2 = [0] * self.dlen
@@ -70,7 +81,6 @@ class myFig(object):
         self.pause = False
 
     def reset(self, tmax=TMAX, ylim=ALIM, zlim=RLIM, dlen=LEN):
-        #print('reset')
         self.ax.clear()
         self.bx.clear()
 
@@ -156,9 +166,55 @@ class myFig(object):
         ry3 = sqrt( ry3 / self.dlen )
         self.rms = [ry1, ry2, ry3]
 
+        # step detection
+        self.th = (ry1 + ry2 + ry3) / 3
+        if self.th < 1.0:
+            self.th = 1.0
+        if self.ya2[0] > self.th:
+            self.ycz = True
+        elif self.ycz and (self.ya2[0] < -self.th):
+            if self.yczt > self.zczt:
+                dt = self.yczt - self.zczt
+                dtt = self.yczt / 3
+                if dt < dtt:
+                    print('Backward')
+                elif dt > 2 * dtt:
+                    print('Forward')
+            self.ycz = False
+            self.yczt = 0
+            print('Y zero crossing')
+        if self.ya3[0] > self.th:
+            self.zcz = True
+        elif self.zcz and (self.ya3[0] < -self.th):
+            self.zcz = False
+            self.zczt = 0
+            print('Z zero crossing')
+        if self.ya2[0] < -self.th:
+            self.yczn = True
+        elif self.yczn and (self.ya2[0] > self.th):
+            if self.ycznt > self.zcznt:
+                dt = self.ycznt - self.zcznt
+                dtt = self.ycznt / 3
+                if dt < dtt:
+                    print('Backward')
+                elif dt > 2 * dtt:
+                    print('Forward')
+            self.yczn = False
+            self.ycznt = 0
+            print('Y zero crossing negative')
+        if self.ya3[0] < -self.th:
+            self.zczn = True
+        elif self.zczn and (self.ya3[0] > self.th):
+            self.zczn = False
+            self.zcznt = 0
+            print('Z zero crossing negative')
+        self.yczt += 1
+        self.zczt += 1
+        self.ycznt += 1
+        self.zcznt += 1
+
     def update(self):
         if self.newdata:
-            #print('update')
             self.ln1.set_ydata(self.ya1)
             self.ln2.set_ydata(self.ya2)
             self.ln3.set_ydata(self.ya3)
@@ -252,7 +308,6 @@ def save():
             Figma.z1[i], Figma.z2[i], Figma.z3[i]))
     f.close()
 
-
 def load():
     if not Figma.pause:
         pause()
@@ -295,13 +350,15 @@ def reset():
     Figma.reset(dlen=dl, ylim=[-ar, ar], zlim=[-rr, rr], tmax=0.02*dl)
 
 def after():
-    #print('after')
     labGxVal['text'] = '{:0.1f}'.format(Figma.grav[0])
     labGyVal['text'] = '{:0.1f}'.format(Figma.grav[1])
     labGzVal['text'] = '{:0.1f}'.format(Figma.grav[2])
     labRxV['text'] = '{:0.1f}'.format(Figma.rms[0])
     labRyV['text'] = '{:0.1f}'.format(Figma.rms[1])
     labRzV['text'] = '{:0.1f}'.format(Figma.rms[2])
+    labThV['text'] = '{:0.1f}'.format(Figma.th)
+    labZcyV['text'] = str(Figma.yczt)
+    labZczV['text'] = str(Figma.zczt)
 
 # frames
 root = tk.Tk()
@@ -353,11 +410,12 @@ btnL.pack(side='left')
 btnRp = Button(bot_frame, text='Replay', command=replay)
 btnRp.pack(side='left')
 
-labGx = Label(sid_frame, text='Grav. X:')
+# gravity (avg)
+labGx = Label(sid_frame, text='Avg X:')
 labGx.grid(row=0, column=0)
-labGy = Label(sid_frame, text='Grav. Y:')
+labGy = Label(sid_frame, text='Avg Y:')
 labGy.grid(row=1, column=0)
-labGz = Label(sid_frame, text='Grav. Z:')
+labGz = Label(sid_frame, text='Avg Z:')
 labGz.grid(row=2, column=0)
 labGxVal = Label(sid_frame, text='0.0', width=6, justify='center')
 labGxVal.grid(row=0, column=1)
@@ -365,6 +423,7 @@ labGyVal = Label(sid_frame, text='0.0', width=6, justify='center')
 labGyVal.grid(row=1, column=1)
 labGzVal = Label(sid_frame, text='0.0', width=6, justify='center')
 labGzVal.grid(row=2, column=1)
+# rms
 labRx = Label(sid_frame, text='Rms X:')
 labRx.grid(row=3, column=0)
 labRy = Label(sid_frame, text='Rms Y:')
@@ -377,6 +436,19 @@ labRyV = Label(sid_frame, text='0.0', width=6, justify='center')
 labRyV.grid(row=4, column=1)
 labRzV = Label(sid_frame, text='0.0', width=6, justify='center')
 labRzV.grid(row=5, column=1)
+# treshold
+labTh = Label(sid_frame, text='Th:')
+labTh.grid(row=6, column=0)
+labThV = Label(sid_frame, text='1.0', width=6, justify='center')
+labThV.grid(row=6, column=1)
+labZcy = Label(sid_frame, text='Y tim:')
+labZcy.grid(row=7, column=0)
+labZcyV = Label(sid_frame, text='0', width=6, justify='center')
+labZcyV.grid(row=7, column=1)
+labZcz = Label(sid_frame, text='Z tim:')
+labZcz.grid(row=8, column=0)
+labZczV = Label(sid_frame, text='0', width=6, justify='center')
+labZczV.grid(row=8, column=1)
 
 gyroThr = GetGyro(PORT, Figma.insert)
 gyroThr.start()
