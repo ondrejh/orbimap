@@ -14,6 +14,9 @@ import serial
 from time import sleep
 from math import sqrt
 
+from pynput.keyboard import Key, Controller
+keyboard = Controller()
+
 LEN = 250
 TMAX = LEN * 0.02 #s
 ALIM = [-12, 12]
@@ -374,7 +377,7 @@ def reset():
 
 # frames
 root = tk.Tk()
-root.title("MPU6050 gyro logger v0.1")
+root.title("MPU6050 gyro logger v0.2")
 fgsid_frame = Frame(root)
 fgsid_frame.pack(fill="both", expand=True)
 fg_frame = Frame(fgsid_frame)
@@ -393,22 +396,26 @@ def forwShow():
     if not labForwB:
         labForw.grid(row=20, column=0, columnspan=2)
         labForwB = True
+        keyboard.press(Key.up)
 def forwHide():
     global labForwB
     if labForwB:
         labForw.grid_forget()
         labForwB = False
+        keyboard.release(Key.down)
 labBack = Label(sid_frame, text='BACKWARD')
 def backShow():
     global labBackB
     if not labBackB:
         labBack.grid(row=20, column=0, columnspan=2)
         labBackB = True
+        keyboard.press(Key.down)
 def backHide():
     global labBackB
     if labBackB:
         labBack.grid_forget()
         labBackB = False
+        keyboard.release(Key.down)
 
 def after():
     labGxVal['text'] = '{:0.1f}'.format(Figma.grav[0])

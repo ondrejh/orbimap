@@ -36,7 +36,7 @@ Save and load data to and from file.
 - [x] file replay
 - [x] calculate and display values: gravity (avg), rms, ~~frequency~~
 - [x] detect steps forward / backward
-- [ ] emulate key press
+- [x] emulate key press
 - [ ] arrow icons
 
 ... and many others
