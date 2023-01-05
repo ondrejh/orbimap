@@ -423,7 +423,7 @@ def forwHide():
     if labForwB:
         labForw.grid_forget()
         labForwB = False
-        keyboard.release(Key.down)
+        keyboard.release(Key.up)
 labBack = Label(sid_frame, text='BACKWARD')
 def backShow():
     global labBackB
